@@ -1,8 +1,11 @@
-FROM python:alpine
+FROM python:3.11-alpine
 
 COPY . /opt/taxii
 WORKDIR /opt/taxii
-RUN pip install --upgrade pip setuptools \
+
+# setuptools removed pkg_resources in v82: https://github.com/pypa/setuptools/compare/v81.0.0...v82.0.0
+RUN pip install --upgrade pip \
+    && pip install setuptools==81.0.0 \
     && pip install pymongo \
     && pip install .
 
