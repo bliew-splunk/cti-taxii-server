@@ -3,7 +3,8 @@ import logging
 import warnings
 
 from flask import Response, current_app, json
-from flask_httpauth import HTTPBasicAuth
+# from flask_httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPTokenAuth
 
 from .backends import base as mbe_base
 from .common import APPLICATION_INSTANCE
@@ -19,7 +20,23 @@ ch.setFormatter(logging.Formatter("[%(name)s] [%(levelname)-8s] [%(asctime)s] %(
 log = logging.getLogger(__name__)
 log.addHandler(ch)
 
-auth = HTTPBasicAuth()
+# auth = HTTPBasicAuth()
+# auth = HTTPTokenAuth(scheme='Bearer')
+auth = HTTPTokenAuth(scheme='', header="x-api-key")
+tokens = {
+    "test-token-1" : "admin"
+}
+@auth.verify_token
+def verify_token(token):
+    if token in tokens:
+        return tokens[token]
+
+# Basic Auth
+# @auth.get_password
+# def get_pwd(username):
+#     if username in current_app.users_config:
+#         return current_app.users_config.get(username)
+#     return None
 
 
 def set_config(flask_application_instance, prop_name, config):
@@ -108,11 +125,6 @@ def register_blueprints(flask_application_instance):
         current_app.register_blueprint(objects.objects_bp)
 
 
-@auth.get_password
-def get_pwd(username):
-    if username in current_app.users_config:
-        return current_app.users_config.get(username)
-    return None
 
 
 @APPLICATION_INSTANCE.errorhandler(500)
