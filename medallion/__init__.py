@@ -1,10 +1,11 @@
 import importlib
 import logging
+import sys
 import warnings
+import os
 
 from flask import Response, current_app, json
-# from flask_httpauth import HTTPBasicAuth
-from flask_httpauth import HTTPTokenAuth
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 
 from .backends import base as mbe_base
 from .common import APPLICATION_INSTANCE
@@ -20,23 +21,44 @@ ch.setFormatter(logging.Formatter("[%(name)s] [%(levelname)-8s] [%(asctime)s] %(
 log = logging.getLogger(__name__)
 log.addHandler(ch)
 
-# auth = HTTPBasicAuth()
-# auth = HTTPTokenAuth(scheme='Bearer')
-auth = HTTPTokenAuth(scheme='', header="x-api-key")
-tokens = {
-    "test-token-1" : "admin"
-}
-@auth.verify_token
-def verify_token(token):
-    if token in tokens:
-        return tokens[token]
+def create_token_auth(scheme='', header=None):
+    auth = HTTPTokenAuth(scheme=scheme, header=header)
+    tokens = {
+        "test-token-1" : "admin"
+    }
 
-# Basic Auth
-# @auth.get_password
-# def get_pwd(username):
-#     if username in current_app.users_config:
-#         return current_app.users_config.get(username)
-#     return None
+    @auth.verify_token
+    def verify_token(token):
+        if token in tokens:
+            return tokens[token]
+    return auth
+
+def create_basic_auth():
+    auth = HTTPBasicAuth()
+
+    @auth.get_password
+    def get_pwd(username):
+        if username in current_app.users_config:
+            return current_app.users_config.get(username)
+        return None
+    return auth
+
+def get_auth_instance(auth_type:str):
+    if not auth_type:
+        print("Using basic auth", file=sys.stderr)
+        return create_basic_auth()
+    auth_type = auth_type.lower()
+
+    if auth_type == 'bearer':
+        print("Using bearer authentication", file=sys.stderr)
+        return create_token_auth(scheme='Bearer')
+    elif auth_type == 'api-key':
+        print("Using api key authentication", file=sys.stderr)
+        return create_token_auth(scheme='', header="x-api-key")
+    else:
+        raise NotImplementedError(f"Unsupported authentication type: {auth_type}")
+
+auth = get_auth_instance(os.getenv("AUTH_TYPE"))
 
 
 def set_config(flask_application_instance, prop_name, config):

@@ -7,10 +7,11 @@ services:
     build:
       context: .
       dockerfile: docker_utils/Dockerfile
-    command: [sh, -c, "medallion --host 0.0.0.0"]
+    command: [sh, -c, "medallion --host 0.0.0.0 --log-level=DEBUG --debug-mode"]
     environment:
       MEDALLION_BACKEND_MODULE_CLASS: "MongoBackend"
       MEDALLION_BACKEND_MONGO_URI: "mongodb://root:example@mongo:27017/"
+      AUTH_TYPE: api-key
     ports:
       - "5000:5000"
   mongo:
