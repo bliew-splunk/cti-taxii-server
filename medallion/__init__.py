@@ -44,7 +44,7 @@ def create_basic_auth():
     return auth
 
 def get_auth_instance(auth_type:str):
-    if not auth_type:
+    if not auth_type or auth_type.lower() == 'basic':
         print("Using basic auth", file=sys.stderr)
         return create_basic_auth()
     auth_type = auth_type.lower()
