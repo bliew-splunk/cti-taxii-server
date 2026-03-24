@@ -11,7 +11,7 @@ services:
     environment:
       MEDALLION_BACKEND_MODULE_CLASS: "MongoBackend"
       MEDALLION_BACKEND_MONGO_URI: "mongodb://root:example@mongo:27017/"
-      AUTH_TYPE: api-key
+      AUTH_TYPE: basic
     ports:
       - "5000:5000"
   mongo:
